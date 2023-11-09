@@ -1,6 +1,39 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module Text.Columnify
-  ()
-  where
+  ( Justify(..)
+  , columnify
+  ) where
+
+import Base0
+
+import Prelude ( (*) )
+
+-- base --------------------------------
+
+import Data.List ( repeat, transpose, zip, zipWith )
+
+-- lens --------------------------------
+
+import Control.Lens.Each ( each )
+import Control.Lens.Fold ( (^..) )
+
+-- natural -----------------------------
+
+import Natural ( NumSign(SignMinus, SignPlus), length, replicate, unNegate,
+                 (⊖) )
+
+-- more-unicode ------------------------
+
+import Data.MoreUnicode.Functor ( (⊳) )
+import Data.MoreUnicode.Lens    ( (⊧) )
+
+-- safe --------------------------------
+
+import Safe ( maximumDef )
+
+-- text --------------------------------
+
+import Data.Text ( Text )
 
 --------------------------------------------------------------------------------
 
@@ -15,11 +48,11 @@ data Justify = JustifyLeft | JustifyRight
 
 -- provide fixed width args, and ignore args, and centrejustify args
 
-columnify ∷ [Justify] → [[𝕋]] → [[𝕋]]
+columnify ∷ [Justify] → [[Text]] → [[Text]]
 columnify pads zs =
-  let pad_t ∷ ℤ → 𝕋 → 𝕋
-      pad_t (unNegate → (SignMinus,n)) t = replicate @𝕋 (n ⊖ length t) ' ' ⊕ t
-      pad_t (unNegate → (SignPlus, n)) t = t ⊕ replicate @𝕋 (n ⊖ length t) ' '
+  let pad_t ∷ ℤ → Text → Text
+      pad_t (unNegate → (SignMinus,n)) t = replicate @Text (n ⊖ length t) ' ' ⊕ t
+      pad_t (unNegate → (SignPlus, n)) t = t ⊕ replicate @Text (n ⊖ length t) ' '
 
       col_widths = transpose zs & each ⊧ (\ ys → maximumDef 0 $ length ⊳ ys)
       xx JustifyLeft  = 1
