@@ -19,13 +19,14 @@ import Control.Lens.Fold ( (^..) )
 
 -- natural -----------------------------
 
-import Natural ( NumSign(SignMinus, SignPlus), length, replicate, unNegate,
-                 (⊖) )
+import Natural ( NumSign(SignMinus, SignPlus), length, natNeg, replicate,
+                 unNegate )
 
 -- more-unicode ------------------------
 
-import Data.MoreUnicode.Functor ( (⊳) )
-import Data.MoreUnicode.Lens    ( (⊧) )
+import Data.MoreUnicode.Functor   ( (⊳) )
+import Data.MoreUnicode.Lens      ( (⊧) )
+import Data.MoreUnicode.Semigroup ( (◇) )
 
 -- safe --------------------------------
 
@@ -51,14 +52,14 @@ data Justify = JustifyLeft | JustifyRight
 columnify ∷ [Justify] → [[Text]] → [[Text]]
 columnify pads zs =
   let pad_t ∷ ℤ → Text → Text
-      pad_t (unNegate → (SignMinus,n)) t = replicate @Text (n ⊖ length t) ' ' ⊕ t
-      pad_t (unNegate → (SignPlus, n)) t = t ⊕ replicate @Text (n ⊖ length t) ' '
+      pad_t (unNegate → (SignMinus,n)) t = replicate @Text (n `natNeg` length t) ' ' ◇ t
+      pad_t (unNegate → (SignPlus, n)) t = t ◇ replicate @Text (n `natNeg` length t) ' '
 
       col_widths = transpose zs & each ⊧ (\ ys → maximumDef 0 $ length ⊳ ys)
       xx JustifyLeft  = 1
       xx JustifyRight = (-1)
       col_widths' = (\(x,y) → fromIntegral y * xx x) ⊳ zip pads col_widths
   in
-    (^.. each) ∘ zipWith pad_t (col_widths' ⊕ repeat 0) ⊳ zs
+    (^.. each) ∘ zipWith pad_t (col_widths' ◇ repeat 0) ⊳ zs
 
 -- that's all, folks! ----------------------------------------------------------
